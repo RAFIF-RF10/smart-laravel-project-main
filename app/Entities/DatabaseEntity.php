@@ -7,6 +7,7 @@ class DatabaseEntity
     const SQL_READ = "mysql_read";
 
     const USER             = "users";
+    const STUDENTS             = "students";
     const TOUR_PLACE       = "tour_places";
     const TOUR_PACKAGE     = "tour_packages";
     const TOUR_ITENARY     = "tour_itenaries";

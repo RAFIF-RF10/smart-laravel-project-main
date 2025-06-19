@@ -38,24 +38,24 @@
                 </ul>
             </li>
             <li class="sidebar-item">
-                <a class="sidebar-link has-arrow {{ in_array($page, ['member', 'member-category']) ? 'active' : '' }}"
+                <a class="sidebar-link has-arrow {{ in_array($page, ['student']) ? 'active' : '' }}" 
                     href="#" data-toggle="collapse"
-                    aria-expanded="{{ in_array($page, ['member']) ? 'true' : 'false' }}">
+                    aria-expanded="{{ in_array($page, ['student']) ? 'true' : 'false' }}">
                     @include('_admin._layout.icons.member')
 
-                    <span class="hide-menu">Anggota (Example)</span>
+                    <span class="hide-menu">SISWA</span>
                 </a>
                 <ul
-                    class="collapse with-bullets show mm-collapse {{ in_array($page, ['member', 'member-category']) ? 'show mm-collapse mm-show' : '' }}">
+                    class="collapse with-bullets show mm-collapse {{ in_array($page, ['student']) ? 'show mm-collapse mm-show' : '' }}">
                     <li class="py-2 nav-item">
-                        <a href="{{ base_url('member') }}" navigate class="{{ $page == 'member' ? 'active' : '' }}">
-                            <p class="mb-0">Data Angota</p>
-                        </a>
+                        <a href="{{ base_url('student') }}" navigate class="{{ $page == 'student' ? 'active' : '' }}">
+                <p class="mb-0">Data Siswa</p>
+            </a>
                     </li>
                     <li class="py-2 nav-item {{ $page == 'member-category' ? 'active' : '' }}">
                         <a href="{{ base_url('member-category') }}" navigate
                             class="{{ $page == 'member-category' ? 'active' : '' }}">
-                            <p class="mb-0">Data Kategori Anggota</p>
+                            <p class="mb-0">Data Kelas</p>
                         </a>
                     </li>
                 </ul>

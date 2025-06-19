@@ -204,7 +204,7 @@ class UserUsecase extends Usecase
                         ->table(DatabaseEntity::USER)
                         ->where('id', (int) $userID)
                         ->first(['password']);
-                        
+
                     if (!Hash::check($value, $user->password)) {
                         $fail('Password saat ini salah.');
                     }
@@ -213,7 +213,7 @@ class UserUsecase extends Usecase
             'password'         => 'required|min:6', // tambahkan aturan sesuai kebutuhan
             're_password'      => 'required|same:password',
         ]);
-        
+
         $customAttributes = [
             'current_password' => 'Password Lama',
             'password'         => 'Password Baru',
@@ -221,7 +221,7 @@ class UserUsecase extends Usecase
         ];
         $validator->setAttributeNames($customAttributes);
         $validator->validate();
-        
+
         DB::beginTransaction();
 
         try {

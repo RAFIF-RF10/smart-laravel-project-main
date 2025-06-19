@@ -5,10 +5,11 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\MemberCategoryController;
 use App\Http\Controllers\Admin\MemberController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
-Route::get("/", function() {
+Route::get("/", function () {
     return redirect("admin/auth/login");
 });
 
@@ -36,7 +37,7 @@ Route::prefix('admin')->middleware("auth")->group(function () {
         Route::post("/update/{id}", [MemberController::class, 'doUpdate']);
         Route::get('/delete/{id}', [MemberController::class, 'doDelete']);
     });
-    
+
     Route::prefix('member-category')->group(function () {
         Route::get('/', [MemberCategoryController::class, 'index']);
         Route::get('/add', [MemberCategoryController::class, 'add']);
@@ -56,7 +57,7 @@ Route::prefix('admin')->middleware("auth")->group(function () {
         Route::get('/reset-password/{id}', [UserController::class, 'resetPassword']);
         Route::get('/delete/{id}', [UserController::class, 'doDelete']);
     });
-    
+
     Route::prefix('setting')->group(function () {
         Route::get('/general', [SettingController::class, 'general']);
         Route::post('/general', [SettingController::class, 'doUpdateGeneral']);
@@ -64,3 +65,14 @@ Route::prefix('admin')->middleware("auth")->group(function () {
         Route::post('/change-password', [SettingController::class, 'doChangePassword']);
     });
 });
+Route::prefix('admin')->middleware(['auth'])->group(function () {
+    Route::prefix('student')->group(function () {
+        Route::get('/', [StudentController::class, 'index']);
+        Route::get('/add', [StudentController::class, 'add']);
+        Route::post('/add', [StudentController::class, 'doCreate']);
+         Route::get('/update/{id}', [StudentController::class, 'update']);
+    Route::post('/update/{id}', [StudentController::class, 'doUpdate']);
+        Route::get('/delete/{id}', [StudentController::class, 'doDelete']);
+    });
+});
+

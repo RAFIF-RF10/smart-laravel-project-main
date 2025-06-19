@@ -2,42 +2,132 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Entities\ResponseEntity;
 use App\Http\Controllers\Controller;
-use App\Http\Presenter\Response;
 use App\Usecases\StudentUsecase;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Response;
+use Illuminate\Http\RedirectResponse;
 
 class StudentController extends Controller
 {
     protected $usecase;
-    protected $StudentUsecase;
-     protected $page = [
+
+    protected $page = [
         "route" => "student",
-        "title" => "Student",
+        "title" => "Data Siswa",
     ];
-        protected $baseRedirect;
-        public function __construct(
-        StudentUsecase $usecase,
-        //   StudentUsecase $StudentUsecase,
-    ){
-        $this->usecase = $usecase;
-        // $this->StudentUsecase = $StudentUsecase;
-    }
-     public function index(Request $req): View | Response
+
+    public function __construct(StudentUsecase $usecase)
     {
-        $usecase = new StudentUsecase();
+        $this->usecase = $usecase;
+    }
 
-        $data = $this->usecase->getAll($req->input());
+    public function index(Request $req): View | Response
+    {
+        $filter = $req->input();
 
-        $memberCategories = $this->StudentUsecase->getAll();
-        $memberCategories = $memberCategories['data']['list'] ?? [];
+        $data = $this->usecase->getAll($filter);
 
-        return render_view("_admin.member.list", [
+        $classList = DB::table('class')->orderBy('class_name')->get();
+
+        return render_view("_admin.students.list", [
             'data' => $data['data']['list'] ?? [],
-            'memberCategories' => $memberCategories,
+            'filter' => $filter,
             'page' => $this->page,
-            'filter' => $req->input(),
+            'classList' => $classList,
         ]);
+    }
+
+    public function add(): View | Response
+    {
+        $classList = DB::table('class')->orderBy('class_name')->get();
+        return render_view('_admin.students.add', [
+            'page' => $this->page,
+            'classList' => $classList,
+        ]);
+    }
+    public function doCreate(Request $request): JsonResponse
+    {
+        $process = $this->usecase->create(
+            data: $request,
+        );
+
+        if (empty($process['error'])) {
+            return response()->json([
+                "success" => true,
+                "message" => ResponseEntity::SUCCESS_MESSAGE_CREATED,
+                "redirect" => $this->page['route']
+            ]);
+        } else {
+            return response()->json([
+                "success" => false,
+                "message" => ResponseEntity::DEFAULT_ERROR_MESSAGE,
+                "redirect" => $this->page['route']
+            ]);
+        }
+    }
+
+    public function update(int $id): View|RedirectResponse | Response
+    {
+        $data = $this->usecase->getByID($id);
+        $classList = DB::table('class')->orderBy('class_name')->get();
+        if (empty($data['data'])) {
+            return redirect()
+                ->with('error', ResponseEntity::DEFAULT_ERROR_MESSAGE);
+        }
+        $data = $data['data'] ?? [];
+
+        return render_view("_admin.students.update", [
+            'data' => (object) $data,
+            'page' => $this->page,
+            'classList' => $classList
+
+        ]);
+    }
+
+    public function doUpdate(int $id, Request $request): JsonResponse
+    {
+        $process = $this->usecase->update(
+            data: $request,
+            id: $id,
+        );
+        dd($process);
+
+        if (empty($process['error'])) {
+            return Response::buildSuccess(
+                message: ResponseEntity::SUCCESS_MESSAGE_UPDATED
+            ) + ['error' => null];;
+        } else {
+            return response()->json([
+                "success" => false,
+                "message" => ResponseEntity::DEFAULT_ERROR_MESSAGE,
+                "redirect" => $this->page['route']
+            ]);
+        }
+    }
+
+    public function doDelete(int $id, Request $request): JsonResponse
+    {
+        $process = $this->usecase->delete(
+            id: $id,
+        );
+
+        if (empty($process['error'])) {
+            return response()->json([
+                "success" => true,
+                "message" => ResponseEntity::SUCCESS_MESSAGE_DELETED,
+                "redirect" => "student"
+            ]);
+        } else {
+            return response()->json([
+                "success" => false,
+                "message" => ResponseEntity::DEFAULT_ERROR_MESSAGE,
+                "redirect" => "student"
+            ]);
+        }
     }
 }

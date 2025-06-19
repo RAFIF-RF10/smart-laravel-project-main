@@ -44,11 +44,13 @@ class UserController extends Controller
         ]);
     }
 
-    public function doCreate(Request $request): JsonResponse
+    public function doCreate(Request $request)
     {
+        return $request;
         $process = $this->usecase->create(
             data: $request,
         );
+
 
         if (empty($process['error'])) {
             return response()->json([
