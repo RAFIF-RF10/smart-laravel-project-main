@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Entities\ResponseEntity;
 use App\Http\Controllers\Controller;
+use App\Usecases\ClassUsecase;
 use App\Usecases\StudentUsecase;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
@@ -12,40 +13,40 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Response;
 use Illuminate\Http\RedirectResponse;
 
-class StudentController extends Controller
+class ClassController extends Controller
 {
     protected $usecase;
 
     protected $page = [
-        "route" => "student",
-        "title" => "Data Siswa",
+        "route" => "class",
+        "title" => "Kelas",
     ];
 
-    public function __construct(StudentUsecase $usecase)
+    public function __construct(ClassUsecase $usecase)
     {
         $this->usecase = $usecase;
     }
 
-    public function index(Request $req): View | Response
-    {
-        $filter = $req->input();
+   public function index(Request $req): View | Response
+{
+    $filter = $req->input();
 
-        $data = $this->usecase->getAll($filter);
+    $data = $this->usecase->getAll($filter);
 
-        $classList = DB::table('class')->orderBy('class_name')->get();
+    $classList = DB::table('class')->orderBy('class_name')->get();
 
-        return render_view("_admin.students.list", [
-            'data' => $data['data']['list'] ?? [],
-            'filter' => $filter,
-            'page' => $this->page,
-            'classList' => $classList,
-        ]);
-    }
+    return render_view("_admin.class.list", [
+        'data' => $data['data']['list'] ?? [],
+        'filter' => $filter,
+        'page' => $this->page,
+        'classList' => $classList,
+    ]);
+}
 
     public function add(): View | Response
     {
         $classList = DB::table('class')->orderBy('class_name')->get();
-        return render_view('_admin.students.add', [
+        return render_view('_admin.class.add', [
             'page' => $this->page,
             'classList' => $classList,
         ]);
@@ -71,7 +72,7 @@ class StudentController extends Controller
         }
     }
 
-    public function update(int $id): View|RedirectResponse | Response
+    public function update(int $id): View | Response
     {
         $data = $this->usecase->getByID($id);
         $classList = DB::table('class')->orderBy('class_name')->get();
@@ -81,7 +82,7 @@ class StudentController extends Controller
         }
         $data = $data['data'] ?? [];
 
-        return render_view("_admin.students.update", [
+        return render_view("_admin.class.update", [
             'data' => (object) $data,
             'page' => $this->page,
             'classList' => $classList
@@ -95,7 +96,8 @@ class StudentController extends Controller
             data: $request,
             id: $id,
         );
- if (empty($process['error'])) {
+
+        if (empty($process['error'])) {
             return response()->json([
                 "success" => true,
                 "message" => ResponseEntity::SUCCESS_MESSAGE_UPDATED,
@@ -120,13 +122,13 @@ class StudentController extends Controller
             return response()->json([
                 "success" => true,
                 "message" => ResponseEntity::SUCCESS_MESSAGE_DELETED,
-                "redirect" => "student"
+                "redirect" => "class"
             ]);
         } else {
             return response()->json([
                 "success" => false,
                 "message" => ResponseEntity::DEFAULT_ERROR_MESSAGE,
-                "redirect" => "student"
+                "redirect" => "class"
             ]);
         }
     }

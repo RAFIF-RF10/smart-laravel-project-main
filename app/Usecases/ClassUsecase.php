@@ -17,82 +17,87 @@ use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 
-class StudentUsecase extends Usecase
+class ClassUsecase extends Usecase
 {
     public string $className;
 
     public function __construct()
     {
-        $this->className = "StudentUsecase";
+        $this->className = "ClassUsecase";
     }
 
-    public function getAll(array $filterData = []): array
-    {
-        $funcName = $this->className . ".getAll";
+   public function getAll(array $filterData = []): array
+{
+    $funcName = $this->className . ".getAll";
 
-        $page       = $filterData['page'] ?? 1;
-        $limit      = $filterData['limit'] ?? 10;
-        $page       = ($page > 0 ? $page : 1);
-        $filterName = $filterData['filter_name'] ?? "";
+    $page       = $filterData['page'] ?? 1;
+    $limit      = $filterData['limit'] ?? 10;
+    $page       = ($page > 0 ? $page : 1);
+    $filterName = $filterData['filter_name'] ?? "";
 
-        try {
-            $data = DB::connection(DatabaseEntity::SQL_READ)
-                ->table(DatabaseEntity::STUDENTS . ' as s')
-                ->leftJoin('class as k', 's.class_id', '=', 'k.id');
+    try {
+        // Ambil data kelas
+        $data = DB::connection(DatabaseEntity::SQL_READ)
+            ->table(DatabaseEntity::KELAS . ' as k')
+            ->select('k.id', 'k.class_name')
+            ->whereNull('k.deleted_at');
 
-            if (!empty($filterName)) {
-                $data = $data->where('s.name', 'like', '%' . $filterName . '%');
-            }
-
-            $fields = ['s.id', 's.name', 's.gender', 'k.class_name'];
-
-            $data = $data->whereNull('s.deleted_at')
-                ->orderBy('k.class_name', 'desc')
-                ->paginate($limit, $fields)
-                ->appends(request()->query());
-
-            return Response::buildSuccess(
-                [
-                    'list' => $data,
-                    'pagination' => [
-                        'current_page' => (int) $page,
-                        'limit'        => (int) $limit,
-                        'payload'      => $filterData
-                    ]
-                ],
-                ResponseEntity::HTTP_SUCCESS
-            );
-        } catch (\Exception $e) {
-            //  dd($e->getMessage());
-            Log::error($e->getMessage(), [
-                "func_name" => $funcName,
-                'user' => Auth::user()
-            ]);
-
-            return Response::buildErrorService($e->getMessage());
+        if (!empty($filterName)) {
+            $data = $data->where('k.class_name', 'like', '%' . $filterName . '%');
         }
-    }
 
+        $data = $data->orderBy('k.class_name', 'asc')
+                     ->paginate($limit)
+                     ->appends(request()->query());
+
+        $studentData = DB::table(DatabaseEntity::STUDENTS)
+            ->select('id', 'name', 'class_id','gender')
+            ->whereNull('deleted_at')
+            ->get()
+            ->groupBy('class_id');
+
+            foreach ($data as $kelas) {
+            $kelas->students = $studentData[$kelas->id] ?? collect();
+        }
+
+        return Response::buildSuccess(
+            [
+                'list' => $data,
+                'pagination' => [
+                    'current_page' => (int) $page,
+                    'limit'        => (int) $limit,
+                    'payload'      => $filterData
+                ]
+            ],
+            ResponseEntity::HTTP_SUCCESS
+        );
+    } catch (\Exception $e) {
+
+        Log::error($e->getMessage(), [
+            "func_name" => $funcName,
+            'user' => Auth::user()
+        ]);
+
+        return Response::buildErrorService($e->getMessage());
+    }
+}
 
     public function create(Request $data): array
     {
         $funcName = $this->className . ".create";
 
         $validator = Validator::make($data->all(), [
-            'name' => 'required',
-            'gender' => 'required|in:L,P',
-            'class_id' => 'required|exists:' . DatabaseEntity::STUDENTS . ',id',
+            'class_name' => 'required',
+
         ]);
 
         $validator->validate();
 
         DB::beginTransaction();
         try {
-            DB::table(DatabaseEntity::STUDENTS)
+            DB::table(DatabaseEntity::KELAS)
                 ->insert([
-                    'name'        => $data['name'],
-                    'gender'        => $data['gender'],
-                    'class_id'        => $data['class_id'],
+                    'class_name'        => $data['class_name'],
                     'created_at'  => now(),
                     'updated_at'  => now(),
                 ]);
@@ -110,13 +115,13 @@ class StudentUsecase extends Usecase
             return Response::buildErrorService($e->getMessage());
         }
     }
-public function getByID(int $id): array
+    public function getByID(int $id): array
     {
         $funcName = $this->className . ".getByID";
 
         try {
             $data = DB::connection(DatabaseEntity::SQL_READ)
-                ->table(DatabaseEntity::STUDENTS)
+                ->table(DatabaseEntity::KELAS)
                 ->whereNull("deleted_at")
                 ->where('id', $id)
                 ->first();
@@ -136,34 +141,32 @@ public function getByID(int $id): array
 
    public function update(Request $data, int $id): array
 {
+
     $return = [];
     $funcName = $this->className . ".update";
 
     $validator = Validator::make($data->all(), [
-        'name' => 'required',
-        'gender' => 'required|in:L,P',
-        'class_id' => 'required|exists:class,id',
+        'class_name' => 'required',
+
     ]);
 
     $validator->validate();
 
     $update = [
-        'name'       => $data['name'],
-        'gender'     => $data['gender'],
-        'class_id'   => $data['class_id'],
+        'class_name' => $data['class_name'],
         'updated_at' => now(),
     ];
 
     DB::beginTransaction();
 
     try {
-        DB::table(DatabaseEntity::STUDENTS)
+        DB::table(DatabaseEntity::KELAS)
             ->where("id", $id)
             ->update($update);
 
           DB::commit();
 
-            return Response::buildSuccess(
+                     $return = Response::buildSuccess(
                 message: ResponseEntity::SUCCESS_MESSAGE_UPDATED
             );
         } catch (\Exception $e) {
@@ -188,7 +191,7 @@ public function getByID(int $id): array
         DB::beginTransaction();
 
         try {
-            $delete = DB::table(DatabaseEntity::STUDENTS)
+            $delete = DB::table(DatabaseEntity::KELAS)
                 ->where('id', $id)
                 ->update([
                     'deleted_by' => Auth::user()->id,

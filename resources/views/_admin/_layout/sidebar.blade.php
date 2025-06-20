@@ -38,7 +38,7 @@
                 </ul>
             </li>
             <li class="sidebar-item">
-                <a class="sidebar-link has-arrow {{ in_array($page, ['student']) ? 'active' : '' }}" 
+                <a class="sidebar-link has-arrow {{ in_array($page, ['student']) ? 'active' : '' }}"
                     href="#" data-toggle="collapse"
                     aria-expanded="{{ in_array($page, ['student']) ? 'true' : 'false' }}">
                     @include('_admin._layout.icons.member')
@@ -52,9 +52,9 @@
                 <p class="mb-0">Data Siswa</p>
             </a>
                     </li>
-                    <li class="py-2 nav-item {{ $page == 'member-category' ? 'active' : '' }}">
-                        <a href="{{ base_url('member-category') }}" navigate
-                            class="{{ $page == 'member-category' ? 'active' : '' }}">
+                    <li class="py-2 nav-item {{ $page == 'class' ? 'active' : '' }}">
+                        <a href="{{ base_url('class') }}" navigate
+                            class="{{ $page == 'class' ? 'active' : '' }}">
                             <p class="mb-0">Data Kelas</p>
                         </a>
                     </li>

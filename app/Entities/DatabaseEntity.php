@@ -8,6 +8,7 @@ class DatabaseEntity
 
     const USER             = "users";
     const STUDENTS             = "students";
+    const KELAS            = "class";
     const TOUR_PLACE       = "tour_places";
     const TOUR_PACKAGE     = "tour_packages";
     const TOUR_ITENARY     = "tour_itenaries";

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\ClassController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\MemberCategoryController;
 use App\Http\Controllers\Admin\MemberController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
+use PhpParser\Builder\ClassConst;
 
 Route::get("/", function () {
     return redirect("admin/auth/login");
@@ -73,6 +75,16 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
          Route::get('/update/{id}', [StudentController::class, 'update']);
     Route::post('/update/{id}', [StudentController::class, 'doUpdate']);
         Route::get('/delete/{id}', [StudentController::class, 'doDelete']);
+    });
+});
+Route::prefix('admin')->middleware(['auth'])->group(function () {
+    Route::prefix('class')->group(function () {
+        Route::get('/', [ClassController::class, 'index']);
+        Route::get('/add', [ClassController::class, 'add']);
+        Route::post('/add', [ClassController::class, 'doCreate']);
+         Route::get('/update/{id}', [ClassController::class, 'update']);
+    Route::post('/update/{id}', [ClassController::class, 'doUpdate']);
+        Route::get('/delete/{id}', [ClassController::class, 'doDelete']);
     });
 });
 
